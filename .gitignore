@@ -347,3 +347,9 @@ healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
+
+# macOS system file 
+.DS_Store
+
+# Binary files are bad for git
+*.pdf
