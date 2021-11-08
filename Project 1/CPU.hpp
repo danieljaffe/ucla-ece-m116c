@@ -30,7 +30,7 @@ public:
     void memory();
     void writeback();
     void clockTick();
-    bool isFinished();
+    bool isFinished() const;
     void printStats();
 
 private:
@@ -62,23 +62,26 @@ private:
 
     struct IDEX {
         uint32_t pc = 0;
-        int32_t rs1Data = 0;
-        int32_t rs2Data = 0;
+        int32_t readData1 = 0;
+        int32_t readData2 = 0;
         uint32_t rd = 0;
         int32_t immediate = 0;
-        Op operation = Op::NOP;
+        Op operation = Op::ZE;
     } idexCurr, idexNext;
 
     struct EXMEM {
         uint32_t pc = 0;
         int32_t aluResult = 0;
+        int32_t readData2 = 0;
         uint32_t rd = 0;
-        Op operation = Op::NOP;
+        Op operation = Op::ZE;
     } exmemCurr, exmemNext;
 
     struct MEMWB {
-        int32_t memRead = 0;
-        Op operation = Op::NOP;
+        uint32_t rd = 0;
+        int32_t aluResult = 0;
+        int32_t memData = 0;
+        Op operation = Op::ZE;
     } memwbCurr, memwbNext;
 };
 
