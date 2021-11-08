@@ -1,5 +1,0 @@
-// include <myCPU.hpp>
-
-myCPU() {
-    
-}

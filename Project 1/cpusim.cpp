@@ -1,4 +1,4 @@
-#include <myCPU.hpp>
+#include <CPU.hpp>
 
 /* 
 Add all the required standard and developed libraries here. 
@@ -7,8 +7,9 @@ Remember to include all those files when you are submitting the project.
 #include <cstdint>
 #include <fstream>
 #include <iostream>
-// #include <string>
 #include <vector>
+#include <algorithm>
+#include <iterator>
 
 /*
 Put/Define any helper function/definitions you need here
@@ -17,82 +18,55 @@ Put/Define any helper function/definitions you need here
 
 int main (int argc, char* argv[]) // your project should be executed like this: ./cpusim filename.txt and should print (a0,a1) 
 {
-	/* This is the front end of your project. 
-	You need to first read the instructions that are stored in a file and load them into an instruction memory. 
-	*/
+	// Checks for correct number of arguments
+	if (2 != argc) {
+        std::cerr << argv[0] << " takes 1 argument: FILE_NAME" << std::endl;
+        return -1;
+    }
 
-	// Checks for correct arguments
-	if (1 != argc) 
-	{
-		std::cerr << argv[0] << " takes 1 argument: FILE_NAME" << std::endl;
-		return -1;
-	}
+	// This creates a vector for the instruction memory bytes and then uses std iterators to copy each line of the file.
+	// I read them in as uint16_t and then copy them as uint8_t. The reason this is necessary is because uint8_t would
+	// be read as a char and only grab one digit of each numbers at a time.
+	std::ifstream ifs(argv[1]);
+	std::vector<uint8_t> instMem;
+    std::istream_iterator<uint16_t> input(ifs);
+    std::copy(input, std::istream_iterator<uint16_t>(), std::back_inserter(instMem));
 
-	// Opens the file for reading
-	std::ifstream instructions;
-	if (!instructions) 
-	{
-		cout << "Error opening input file" << endl;
-		return -1;
-	}
+    // This vector is for the data memory.
+    std::vector<uint8_t> dataMem;
 
+	// Instantiate CPU object
+    auto myCPU = CPU(std::move(instMem), std::move(dataMem));
 
-
-
-
-	FILE* fin  = stdin; // or use ifstream
-
-	/* Define your Instruction memory here. Each cell should store 1 byte. You can define the memory either dynamically, or define it as a fixed size with size 4MB (i.e., 4096 lines). Each instruction is 32 bits (i.e., 4 lines, saved in little-endian mode). 
-	
-	Each line in the input file is stored as an unsigned char and is 1 byte (each four lines are one instruction). You need to read the file line by line and store it into the memory. You may need a mechanism to convert these values to bits so that you can read opcodes, operands, etc. 
-	*/ 
-	instMem = ... 
-
-	
-
-	/* OPTIONAL: Instantiate your Instruction object here. */
-	Instruction myInst; 
-
-	/* OPTIONAL: Instantiate your CPU object here. */
-	CPU myCPU(); 
-
-	// Clock and PC
-	uint64_t myClock = 0; // data-types can be changed! This is just a suggestion. 
-	uint64_t myPC = 0; 
-
-
-
-	while (1) // processor's main loop. Each iteration is equal to one clock cycle.  
+	while (1) // processor's main loop. Each iteration is equal to one clock cycle.
 	{
 		//fetch
-		... = myCPU.fetch(...) // fetching the instruction
+		myCPU.fetch();
 
 		// decode
-		... = myCPU.decode(...) // decoding
+		myCPU.decode();
 
 		// execute
+        myCPU.execute();
 
 		// memory
+        myCPU.memory();
 
 		// writeback
-
+        myCPU.writeback();
 
 		// _next values should be written to _current values here:
+        myCPU.clockTick();
 
-		//
-		myClock += 1; 
-		myPC += 4; // for now we can assume that next PC is always PC + 4
-		// we should break the loop if ALL instructions in the pipelinehas opcode==0 instruction 
-		(if ...)
-			break; 
+		// Break the loop if ALL instructions in the pipeline has opcode==0 instruction
+		if (myCPU.isFinished()) { break; }
 	}
 
-	// clean up the memory (if any)
-
 	// print the stats
+    myCPU.printStats();
 
-	return 0; 
-	
+	return 0;
 }
+
 
 

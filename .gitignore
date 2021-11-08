@@ -353,3 +353,11 @@ MigrationBackup/
 
 # Binary files are bad for git
 *.pdf
+
+Project 1/cmake-build-debug/
+
+Project 1/CMakeLists.txt
+
+*.xml
+
+Project 1/.idea/
