@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <bitset>
 
 // Opcode types
 #define ZERO 0x0  // Five in a row indicates the program has completed

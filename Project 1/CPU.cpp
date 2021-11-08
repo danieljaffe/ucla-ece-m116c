@@ -9,13 +9,20 @@ CPU::CPU(std::vector<uint8_t> &&iMem, std::vector<uint8_t> &&dMem) : insMem(std:
 
 void CPU::fetch() {
     // Fetch one instruction from the program memory in little endian form.
-    uint32_t byte1 = insMem[ifidCurr.pc];
-    uint32_t byte2 = insMem[ifidCurr.pc + 1];
-    uint32_t byte3 = insMem[ifidCurr.pc + 2];
-    uint32_t byte4 = insMem[ifidCurr.pc + 3];
+    if (ifidCurr.pc + 4 < insMem.size()) {
+        uint32_t byte1 = insMem[ifidCurr.pc];
+        uint32_t byte2 = insMem[ifidCurr.pc + 1];
+        uint32_t byte3 = insMem[ifidCurr.pc + 2];
+        uint32_t byte4 = insMem[ifidCurr.pc + 3];
 
-    // Concatenate them into a single 32 bit instruction in big endian form.
-    ifidNext.instruction = (byte4 << 24) + (byte3 << 16) + (byte2 << 8) + byte1;
+        std::cout << "<<<PC = " << ifidCurr.pc << ">>>" << std::endl;
+
+        // Concatenate them into a single 32 bit instruction in big endian form.
+        ifidNext.instruction = (byte4 << 24) + (byte3 << 16) + (byte2 << 8) + byte1;
+    }
+    else {
+        ifidNext.instruction = ZERO;
+    }
 
     // Ensures we can track 5 sequential NOPs
     if (ZERO == (ifidNext.instruction & 0x7fff)) { ++killCounter; }
@@ -24,6 +31,10 @@ void CPU::fetch() {
 
 void CPU::decode() {
     // Extract and examine the instruction components
+    std::bitset<32> x(ifidCurr.instruction);
+    std::cout << "Instruction from clock tick " << clockCount << ":" << std::endl;
+    std::cout << "     > " << x << std::endl;
+
     uint32_t opcode = ifidCurr.instruction & 0x7fff;
     uint8_t func3 = (ifidCurr.instruction >> 12) & 0x7;
     uint8_t func7 = (ifidCurr.instruction >> 25) & 0x7f;
@@ -122,7 +133,6 @@ void CPU::memory() {
     // Update the MEMWB struct
     memwbNext.rd = exmemCurr.rd;
     memwbNext.aluResult = exmemCurr.aluResult;
-    ifidNext.pc = exmemCurr.pc + 4;  // No branching or jumps in this version
 
     int32_t lByte1, lByte2, lByte3, lByte4;
     uint8_t sByte1, sByte2, sByte3, sByte4;
@@ -160,14 +170,15 @@ void CPU::memory() {
 }
 
 void CPU::writeback() {
-    if (ZERO == memwbCurr.rd || op::LW == memwbCurr.operation) {
+    if (ZERO == memwbCurr.rd || Op::LW == memwbCurr.operation) {
         return;
     }  // Don't overwrite x0 ever! Also, LW doesn't write to a register.
-    if (op::SW == memwbCurr.operation) { registerFile[memwbCurr.rd] = memwbCurr.memData; }
+    if (Op::SW == memwbCurr.operation) { registerFile[memwbCurr.rd] = memwbCurr.memData; }
     else { registerFile[memwbCurr.rd] = memwbCurr.aluResult; }
 }
 
 void CPU::clockTick() {
+    ifidNext.pc += 4;  // No branching or jumps in this version
     ++clockCount;
     ifidCurr = ifidNext;
     idexCurr = idexNext;

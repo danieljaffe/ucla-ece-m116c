@@ -32,13 +32,13 @@ int main (int argc, char* argv[]) // your project should be executed like this: 
     std::istream_iterator<uint16_t> input(ifs);
     std::copy(input, std::istream_iterator<uint16_t>(), std::back_inserter(instMem));
 
-    // This vector is for the data memory.
-    std::vector<uint8_t> dataMem;
+    // This vector is for the data memory. Size is set for 4096 bytes.
+    std::vector<uint8_t> dataMem (4096, 0x0);
 
 	// Instantiate CPU object
     auto myCPU = CPU(std::move(instMem), std::move(dataMem));
 
-	while (1) // processor's main loop. Each iteration is equal to one clock cycle.
+	while (true) // processor's main loop. Each iteration is equal to one clock cycle.
 	{
 		//fetch
 		myCPU.fetch();
