@@ -65,7 +65,7 @@ int main (int argc, char* argv[]) // your project should be executed like this: 
 	// print the stats
     myCPU.printStats();
 
-	return 0;
+	exit(0);
 }
 
 
